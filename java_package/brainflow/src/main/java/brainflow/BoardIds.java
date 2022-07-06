@@ -53,7 +53,8 @@ public enum BoardIds
     BRAINALIVE_BOARD (40),
     MUSE_2016_BOARD (41),
     MUSE_2016_BLED_BOARD (42),
-    PIEEG_BOARD (43);
+    PIEEG_BOARD (43),
+    NEUPHONY = (44);
 
     private final int board_id;
     private static final Map<Integer, BoardIds> bi_map = new HashMap<Integer, BoardIds> ();
