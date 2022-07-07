@@ -48,7 +48,7 @@
 #include "streaming_board.h"
 #include "synthetic_board.h"
 #include "unicorn_board.h"
-#include "neuphony_board.h"
+#include "neuphony.h"
 
 #include "json.hpp"
 

@@ -6,7 +6,7 @@
 #include "windows_registry.h"
 #endif
 
-Neuphony::Neuphony (struct BrainFlowInputParams params, int board_id)
+NeuphonyBoard::NeuphonyBoard (struct BrainFlowInputParams params, int board_id)
     : Board (board_id, params)
 {
     serial = NULL;
@@ -15,13 +15,13 @@ Neuphony::Neuphony (struct BrainFlowInputParams params, int board_id)
     initialized = false;
 }
 
-Neuphony::~Neuphony ()
+NeuphonyBoard::~NeuphonyBoard ()
 {
     skip_logs = true;
     release_session ();
 }
 
-int Neuphony::open_port ()
+int NeuphonyBoard::open_port ()
 {
     if (serial->is_port_open ())
     {
@@ -43,7 +43,7 @@ int Neuphony::open_port ()
 }
 
 
-int Neuphony::send_to_board (const char *msg)
+int NeuphonyBoard::send_to_board (const char *msg)
 {
     int length = (int)strlen (msg);
     safe_logger (spdlog::level::debug, "sending {} to the board", msg);
@@ -57,7 +57,7 @@ int Neuphony::send_to_board (const char *msg)
 }
 
 
-int Neuphony::send_to_board (const char *msg, std::string &response)
+int NeuphonyBoard::send_to_board (const char *msg, std::string &response)
 {
     int length = (int)strlen (msg);
     safe_logger (spdlog::level::debug, "sending {} to the board", msg);
@@ -72,7 +72,7 @@ int Neuphony::send_to_board (const char *msg, std::string &response)
     return (int)BrainFlowExitCodes::STATUS_OK;
 }
 
-std::string Neuphony::read_serial_response ()
+std::string NeuphonyBoard::read_serial_response ()
 {
     constexpr int max_tmp_size = 4096;
     unsigned char tmp_array[max_tmp_size];
@@ -97,7 +97,7 @@ std::string Neuphony::read_serial_response ()
     return std::string ((const char *)tmp_array);
 }
 
-int Neuphony::set_port_settings ()
+int NeuphonyBoard::set_port_settings ()
 {
     int res = serial->set_serial_port_settings (1000, false);
     if (res < 0)
@@ -109,7 +109,7 @@ int Neuphony::set_port_settings ()
     return send_to_board ("v");
 }
 
-int Neuphony::status_check ()
+int NeuphonyBoard::status_check ()
 {
     unsigned char buf[1];
     int count = 0;
@@ -153,7 +153,7 @@ int Neuphony::status_check ()
 }
 
 
-int Neuphony::prepare_session ()
+int NeuphonyBoard::prepare_session ()
 {
     if (initialized)
     {
@@ -220,7 +220,7 @@ int Neuphony::prepare_session ()
     return (int)BrainFlowExitCodes::STATUS_OK;
 }
 
-int Neuphony::start_stream (int buffer_size, const char *streamer_params)
+int NeuphonyBoard::start_stream (int buffer_size, const char *streamer_params)
 {
     if (is_streaming)
     {
@@ -247,7 +247,7 @@ int Neuphony::start_stream (int buffer_size, const char *streamer_params)
     return (int)BrainFlowExitCodes::STATUS_OK;
 }
 
-int Neuphony::stop_stream ()
+int NeuphonyBoard::stop_stream ()
 {
     if (is_streaming)
     {
@@ -266,7 +266,7 @@ int Neuphony::stop_stream ()
     }
 }
 
-int Neuphony::release_session ()
+int NeuphonyBoard::release_session ()
 {
     if (initialized)
     {

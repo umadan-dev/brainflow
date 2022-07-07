@@ -5,7 +5,7 @@
 #include "board.h"
 #include "board_controller.h"
 
-class Neuphony : public Board
+class NeuphonyBoard : public Board
 {
     private:
         volatile bool keep_alive;
@@ -16,8 +16,8 @@ class Neuphony : public Board
         void read_thread ();
 
     public:
-        Neuphony (struct BrainFlowInputParams params);
-        ~Neuphony ();
+        NeuphonyBoard (struct BrainFlowInputParams params);
+        ~NeuphonyBoard ();
 
         int prepare_session ();
         int start_stream (int buffer_size, const char *streamer_params);
