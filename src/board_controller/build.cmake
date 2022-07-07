@@ -77,6 +77,7 @@ SET (BOARD_CONTROLLER_SRC
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/ble_lib_board.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/muse/muse.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/brainalive/brainalive.cpp
+    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuphony/neuphony_board.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuphony/neuphony.cpp
 )
 

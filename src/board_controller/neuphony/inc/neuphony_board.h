@@ -26,11 +26,11 @@ class NeuphonyBoard : public Board
 
     public:
         NeuphonyBoard (struct BrainFlowInputParams params, int board_id);
-        ~NeuphonyBoard ();
+        virtual ~NeuphonyBoard ();
 
-        int prepare_session ();
-        int start_stream (int buffer_size, const char *streamer_params);
-        int stop_stream ();
-        int release_session ();
-        int config_board (std::string config, std::string &response);
+        virtual int prepare_session ();
+        virtual int start_stream (int buffer_size, const char *streamer_params);
+        virtual int stop_stream ();
+        virtual int release_session ();
+        virtual int config_board (std::string config, std::string &response);
 };

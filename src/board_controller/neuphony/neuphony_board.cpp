@@ -42,6 +42,12 @@ int NeuphonyBoard::open_port ()
     return (int)BrainFlowExitCodes::STATUS_OK;
 }
 
+int NeuphonyBoard::config_board (std::string config, std::string &response)
+{
+    safe_logger (spdlog::level::err, "Neuphony doesnt support config_board");
+    return (int)BrainFlowExitCodes::UNSUPPORTED_BOARD_ERROR;
+}
+
 
 int NeuphonyBoard::send_to_board (const char *msg)
 {
@@ -204,12 +210,12 @@ int NeuphonyBoard::prepare_session ()
     {
         return send_res;
     }
-    // cyton sends response back, clean serial buffer and analyze response
+    // neuphony sends response back, clean serial buffer and analyze response
     std::string response = read_serial_response ();
     if (response.substr (0, 7).compare ("Failure") == 0)
     {
         safe_logger (spdlog::level::err,
-            "Board config error, probably dongle is inserted but Cyton is off.");
+            "Board config error, probably dongle is inserted but Neuphony is off.");
         safe_logger (spdlog::level::trace, "read {}", response.c_str ());
         delete serial;
         serial = NULL;
