@@ -21,7 +21,7 @@ Bytes 15-17: Data value for EEG channel 5
 Bytes 18-20: Data value for EEG channel 6
 Bytes 21-23: Data value for EEG channel 6
 Bytes 24-26: Data value for EEG channel 8
-Aux Data Bytes 27-32: 6 bytes of data
+Accel Data Bytes 27-32: 6 bytes of data
 Byte 33: 0xC3
 */
 
