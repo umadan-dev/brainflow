@@ -244,6 +244,7 @@ int prepare_session (int board_id, const char *json_brainflow_input_params)
             break;
         case BoardIds::NEUPHONY:
             board = std::shared_ptr<Board> (new Neuphony(params));
+            break;
         default:
             return (int)BrainFlowExitCodes::UNSUPPORTED_BOARD_ERROR;
     }

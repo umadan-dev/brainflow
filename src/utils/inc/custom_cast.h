@@ -94,3 +94,15 @@ inline int32_t swap_endians (int32_t value)
     result = (leftmost_byte | left_middle_byle | right_middle_byte | rightmost_byte);
     return result;
 }
+
+inline int32_t hex_string_to_int32(unsigned char (*array), int32_t start, int32_t end)
+{
+    int int_value_from_hex_string;
+    std::stringstream str;
+
+    for(int i=start;i<=end;i++){
+        str << array[i];
+    }
+    str >> std::hex >> int_value_from_hex_string;
+    return int_value_from_hex_string;
+}

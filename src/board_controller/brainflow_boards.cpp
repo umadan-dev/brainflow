@@ -571,12 +571,13 @@ json brainflow_boards_json = {
             {{"name", "Neuphony"},
             {"sampling_rate", 250},
             {"package_num_channel", 0},
-            {"num_rows", 14},
+            {"num_rows", 15},
             {"eeg_channels", {1, 2, 3, 4, 5, 6, 7, 8}},
             {"eeg_names", "Fp1,Fp2,F3,F4,T3,T4,Fz,Pz"},
             {"accel_channels", {9, 10, 11}},
             {"other_channels", {12}},
             {"timestamp_channel", 13},
+            {"marker_channel", 14}
 
         }}
     }

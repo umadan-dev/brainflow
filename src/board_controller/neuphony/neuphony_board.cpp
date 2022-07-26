@@ -44,7 +44,7 @@ int NeuphonyBoard::open_port ()
 
 int NeuphonyBoard::config_board (std::string config, std::string &response)
 {
-    safe_logger (spdlog::level::err, "Neuphony doesnt support config_board");
+    safe_logger (spdlog::level::err, "Neuphony doesn't support config_board");
     return (int)BrainFlowExitCodes::UNSUPPORTED_BOARD_ERROR;
 }
 
@@ -58,91 +58,53 @@ int NeuphonyBoard::send_to_board (const char *msg)
     {
         return (int)BrainFlowExitCodes::BOARD_WRITE_ERROR;
     }
-
     return (int)BrainFlowExitCodes::STATUS_OK;
 }
 
-
-int NeuphonyBoard::send_to_board (const char *msg, std::string &response)
+int NeuphonyBoard::set_port_settings ()
 {
-    int length = (int)strlen (msg);
-    safe_logger (spdlog::level::debug, "sending {} to the board", msg);
-    int res = serial->send_to_serial_port ((const void *)msg, length);
-    if (res != length)
-    {   
-        response = "";
-        return (int)BrainFlowExitCodes::BOARD_WRITE_ERROR;
+    int res = serial->set_custom_baudrate (921600);
+ 
+    if (res < 0)
+    {
+        safe_logger (spdlog::level::err, "Unable to set custom baud rate, res is {}", res);
+        return (int)BrainFlowExitCodes::SET_PORT_ERROR;
     }
-    response = read_serial_response ();
-
+    safe_logger (spdlog::level::trace, "set port settings");
     return (int)BrainFlowExitCodes::STATUS_OK;
 }
 
 std::string NeuphonyBoard::read_serial_response ()
 {
-    constexpr int max_tmp_size = 4096;
+    constexpr int max_tmp_size = 500;
     unsigned char tmp_array[max_tmp_size];
-    unsigned char tmp;
-    int tmp_id = 0;
-    while (serial->read_from_serial_port (&tmp, 1) == 1)
-    {
-        if (tmp_id < max_tmp_size)
-        {
-            tmp_array[tmp_id] = tmp;
-            tmp_id++;
-        }
-        else
-        {
-            serial->flush_buffer ();
-            break;
-        }
+
+    if (serial->read_from_serial_port (tmp_array, 450) > 0){
+        serial->flush_buffer ();
     }
-    tmp_id = (tmp_id == max_tmp_size) ? tmp_id - 1 : tmp_id;
-    tmp_array[tmp_id] = '\0';
+    tmp_array[450] = '\0';
 
     return std::string ((const char *)tmp_array);
 }
 
-int NeuphonyBoard::set_port_settings ()
-{
-    int res = serial->set_serial_port_settings (1000, false);
-    if (res < 0)
-    {
-        safe_logger (spdlog::level::err, "Unable to set port settings, res is {}", res);
-        return (int)BrainFlowExitCodes::SET_PORT_ERROR;
-    }
-    safe_logger (spdlog::level::trace, "set port settings");
-    return send_to_board ("v");
-}
-
 int NeuphonyBoard::status_check ()
 {
-    unsigned char buf[1];
-    int count = 0;
+    char buf[40];
     int max_empty_seq = 5;
     int num_empty_attempts = 0;
     std::string resp = "";
-
-    for (int i = 0; i < 500; i++)
+    
+    for (int i = 0; i < 10; i++)
     {
-        int res = serial->read_from_serial_port (buf, 1);
+        int res = serial->read_from_serial_port (buf, 40);
         if (res > 0)
         {
-            resp += buf[0];
+            buf[39]='\0';
+            const char* status = buf;
             num_empty_attempts = 0;
-            // board is ready if there are '$$$'
-            if (buf[0] == '$')
-            {
-                count++;
-            }
-            else
-            {
-                count = 0;
-            }
-            if (count == 3)
-            {
+            if (strstr(status,"Please press \"x\" to enable Serial data") != NULL)
+                serial->flush_buffer ();
                 return (int)BrainFlowExitCodes::STATUS_OK;
-            }
         }
         else
         {
@@ -204,22 +166,10 @@ int NeuphonyBoard::prepare_session ()
         serial = NULL;
         return initted;
     }
-    
     int send_res = send_to_board ("x");
     if (send_res != (int)BrainFlowExitCodes::STATUS_OK)
     {
         return send_res;
-    }
-    // neuphony sends response back, clean serial buffer and analyze response
-    std::string response = read_serial_response ();
-    if (response.substr (0, 7).compare ("Failure") == 0)
-    {
-        safe_logger (spdlog::level::err,
-            "Board config error, probably dongle is inserted but Neuphony is off.");
-        safe_logger (spdlog::level::trace, "read {}", response.c_str ());
-        delete serial;
-        serial = NULL;
-        return (int)BrainFlowExitCodes::BOARD_NOT_READY_ERROR;
     }
 
     initialized = true;
@@ -233,15 +183,24 @@ int NeuphonyBoard::start_stream (int buffer_size, const char *streamer_params)
         safe_logger (spdlog::level::err, "Streaming thread already running");
         return (int)BrainFlowExitCodes::STREAM_ALREADY_RUN_ERROR;
     }
-
     int res = prepare_for_acquisition (buffer_size, streamer_params);
     if (res != (int)BrainFlowExitCodes::STATUS_OK)
     {
         return res;
     }
 
-    // start streaming
-    
+    // neuphony sends response back, clean serial buffer and analyze response
+    std::string response = read_serial_response ();
+    if (response.substr (0, 7).compare ("Failure") == 0)
+    {
+        safe_logger (spdlog::level::err,
+            "Board config error, probably dongle is inserted but Neuphony is off.");
+        safe_logger (spdlog::level::trace, "read {}", response.c_str ());
+        delete serial;
+        serial = NULL;
+        return (int)BrainFlowExitCodes::BOARD_NOT_READY_ERROR;
+    }
+
     int send_res = send_to_board ("c");
     if (send_res != (int)BrainFlowExitCodes::STATUS_OK)
     {
@@ -263,7 +222,6 @@ int NeuphonyBoard::stop_stream ()
         {
             streaming_thread.join ();
         }
-
         return send_to_board ("d");
     }
     else
@@ -279,6 +237,11 @@ int NeuphonyBoard::release_session ()
         if (is_streaming)
         {
             stop_stream ();
+        }
+        int stop_res = send_to_board ("y");
+        if (stop_res != (int)BrainFlowExitCodes::STATUS_OK)
+        {
+            return stop_res;
         }
         free_packages ();
         initialized = false;
