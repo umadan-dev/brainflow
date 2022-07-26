@@ -30,14 +30,14 @@ void Neuphony::read_thread ()
     int res;
     unsigned char b[66];
     double accel[3] = {0.};
-    int num_rows = board_descr["num_rows"];
+    int num_rows = board_descr["default"]["num_rows"];
     double *package = new double[num_rows];
 
     for (int i = 0; i < num_rows; i++)
     {
         package[i] = 0.0;
     }
-    std::vector<int> eeg_channels = board_descr["eeg_channels"];
+    std::vector<int> eeg_channels = board_descr["default"]["eeg_channels"];
 
     while (keep_alive)
     {
@@ -73,7 +73,7 @@ void Neuphony::read_thread ()
         }
 
         // package num
-        package[board_descr["package_num_channel"].get<int> ()] = (double)hex_string_to_int32(b, 0, 1);
+        package[board_descr["default"]["package_num_channel"].get<int> ()] = (double)hex_string_to_int32(b, 0, 1);
 
         // eeg
         for (unsigned int i = 0; i < eeg_channels.size (); i++)
@@ -81,17 +81,17 @@ void Neuphony::read_thread ()
             package[eeg_channels[i]] = eeg_scale * hex_string_to_int32(b, 2+6*i, 1+6*(i+1));
         }
         // end byte
-        package[board_descr["other_channels"][0].get<int> ()] = (double)hex_string_to_int32(b, 62, 63);
+        package[board_descr["default"]["other_channels"][0].get<int> ()] = (double)hex_string_to_int32(b, 62, 63);
 
         // place processed bytes for accel
         if (hex_string_to_int32(b,62,63) != END_BYTE)
         {          
-            package[board_descr["accel_channels"][0].get<int> ()] = accel_scale * hex_string_to_int32(b, 50, 53);
-            package[board_descr["accel_channels"][1].get<int> ()] = accel_scale * hex_string_to_int32(b, 54, 57);
-            package[board_descr["accel_channels"][2].get<int> ()] = accel_scale * hex_string_to_int32(b, 58, 61);
+            package[board_descr["default"]["accel_channels"][0].get<int> ()] = accel_scale * hex_string_to_int32(b, 50, 53);
+            package[board_descr["default"]["accel_channels"][1].get<int> ()] = accel_scale * hex_string_to_int32(b, 54, 57);
+            package[board_descr["default"]["accel_channels"][2].get<int> ()] = accel_scale * hex_string_to_int32(b, 58, 61);
         }
 
-        package[board_descr["timestamp_channel"].get<int> ()] = get_timestamp ();
+        package[board_descr["default"]["timestamp_channel"].get<int> ()] = get_timestamp ();
 
         push_package (package);
     }
