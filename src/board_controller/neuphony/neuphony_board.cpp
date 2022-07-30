@@ -76,13 +76,29 @@ int NeuphonyBoard::set_port_settings ()
 
 std::string NeuphonyBoard::read_serial_response ()
 {
-    constexpr int max_tmp_size = 500;
+    constexpr int max_tmp_size = 4096;
     unsigned char tmp_array[max_tmp_size];
-
-    if (serial->read_from_serial_port (tmp_array, 450) > 0){
-        serial->flush_buffer ();
+    unsigned char tmp;
+    int tmp_id = 0;
+    while (serial->read_from_serial_port (&tmp, 1) == 1)
+    {
+        if (tmp_id < max_tmp_size)
+        {
+            if(tmp==126){
+                serial->flush_buffer ();
+                break;
+            }
+            tmp_array[tmp_id] = tmp;
+            tmp_id++;
+        }
+        else
+        {
+            serial->flush_buffer ();
+            break;
+        }
     }
-    tmp_array[450] = '\0';
+    tmp_id = (tmp_id == max_tmp_size) ? tmp_id - 1 : tmp_id;
+    tmp_array[tmp_id] = '\0';
 
     return std::string ((const char *)tmp_array);
 }
